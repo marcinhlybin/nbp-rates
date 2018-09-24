@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Retrieves National Polish Bank currency rates
+# Retrieves National Bank of Poland (NBP) currency rates
 
 import os
 import re
