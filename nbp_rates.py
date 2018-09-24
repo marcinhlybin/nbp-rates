@@ -20,7 +20,7 @@ def nbp_rate_last(currency, dt=datetime.utcnow()):
     dt       -- date as datetime object
     currency -- 3-letter currency symbol, e.g. EUR
 
-    Return a tuple (date, price)
+    Returns a tuple (date, price)
     """
 
     for i in range(1,10):
@@ -39,6 +39,8 @@ def nbp_rate(currency, dt=datetime.utcnow()):
     Arguments:
     dt       -- date as datetime object
     currency -- 3-letter currency symbol, e.g. EUR
+
+    Returns a tuple (date, price)
     """
 
     rates = __init_rates(dt)
@@ -55,6 +57,8 @@ def nbp_rates(currency, year):
     Arguments:
     year     -- year string, e.g. 2018
     currency -- 3-letter currency symbol, e.g. EUR
+
+    Returns a list of tuples (date, price)
     """
 
     dt = datetime.strptime(str(year), '%Y')
