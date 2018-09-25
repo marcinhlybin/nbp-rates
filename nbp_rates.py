@@ -9,7 +9,7 @@ import requests
 from datetime import datetime, timedelta
 
 CACHE_FILE = '/tmp/nbp_rates_{year}.csv'
-
+RATES = {}
 
 def nbp_rate_last(currency, dt=datetime.utcnow()):
     """Returns NBP currency rate for last workday
@@ -23,10 +23,11 @@ def nbp_rate_last(currency, dt=datetime.utcnow()):
 
     for i in range(1,10):
         lastday = dt - timedelta(days=i)
-        rates = __init_rates(lastday)
+        year = int(lastday.strftime('%Y'))
+        __init_rates(year)
         try:
             date = lastday.strftime('%Y%m%d')
-            return date, rates[currency][date]
+            return date, RATES[year][currency][date]
         except KeyError:
             continue
 
@@ -41,10 +42,12 @@ def nbp_rate(currency, dt=datetime.utcnow()):
     Returns a tuple (date, price)
     """
 
-    rates = __init_rates(dt)
-    date = dt.strftime('%Y%m%d')
+    year = int(dt.strftime('%Y'))
+    __init_rates(year)
+
     try:
-        return date, rates[currency][date]
+        date = dt.strftime('%Y%m%d')
+        return date, RATES[year][currency][date]
     except KeyError as e:
         raise KeyError('NBP rate not found for date {}'.format(date)) from e
 
@@ -59,25 +62,26 @@ def nbp_rates(currency, year):
     Returns a generator of tuples (date, price)
     """
 
-    dt = datetime.strptime(str(year), '%Y')
-    rates = __init_rates(dt)
-    for date in sorted(rates[currency]):
-        yield (date, rates[currency][date])
+    year = int(year)
+    __init_rates(year)
+    for date in sorted(RATES[year][currency]):
+        yield (date, RATES[year][currency][date])
 
 
-def __init_rates(dt):
-    year = int(dt.strftime('%Y'))
-    current_year = int(dt.utcnow().strftime('%Y'))
+def __init_rates(year):
+    current_year = int(datetime.utcnow().strftime('%Y'))
     if year < 2002 or year > current_year:
         raise ValueError('Rates not found for year {}'.format(year))
+
+    if year in RATES:
+        return
 
     __download_rates(year)
 
     cache_file = CACHE_FILE.format(year=year)
     with open(cache_file, encoding='iso8859-2') as f:
         data = csv.reader(f, delimiter=';')
-        return __parse_rates(data)
-
+        RATES[year] = __parse_rates(data)
 
 def __download_rates(year):
     nbp_url = 'https://www.nbp.pl/kursy/Archiwum/archiwum_tab_a_{year}.csv'.format(year=year)
