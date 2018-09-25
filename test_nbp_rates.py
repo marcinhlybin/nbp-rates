@@ -22,12 +22,20 @@ class UnitTests(unittest.TestCase):
         dt = datetime.utcnow()
         self.assertIsInstance(nbp_rate_last('EUR', dt)[1], float)
 
+    def test_nbp_rate_last_tab_b(self):
+        dt = datetime.strptime('2018-01-01', '%Y-%m-%d')
+        self.assertEqual(nbp_rate_last('GEL', dt), ('20171227', 1.3633))
+
     def test_nbp_rate_last_exc(self):
         dt = datetime.strptime('2001-10-01', '%Y-%m-%d')
         self.assertRaises(ValueError, lambda: nbp_rate_last('THB', dt))
 
     def test_nbp_rates(self):
         self.assertEqual(len(list(nbp_rates('USD', 2017))), 251)
+
+    def test_nbp_rate_tab_b(self):
+        dt = datetime.strptime('2018-09-05', '%Y-%m-%d')
+        self.assertEqual(nbp_rate('GEL', dt), ('20180905', 1.4373))
 
 
 if __name__ == '__main__':

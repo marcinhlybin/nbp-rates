@@ -8,7 +8,7 @@ import argparse
 import requests
 from datetime import datetime, timedelta
 
-CACHE_FILE = '/tmp/nbp_rates_{year}.csv'
+CACHE_FILE = '/tmp/nbp_rates_{type}_{year}.csv'
 RATES = {}
 
 def nbp_rate_last(currency, dt=datetime.utcnow()):
@@ -76,16 +76,18 @@ def __init_rates(year):
     if year in RATES:
         return
 
-    __download_rates(year)
+    for rates_type in ('a', 'b'):
+        __download_rates(year, rates_type)
+        cache_file = CACHE_FILE.format(type=rates_type, year=year)
+        with open(cache_file, encoding='iso8859-2') as f:
+            data = csv.reader(f, delimiter=';')
+            if year not in RATES:
+                RATES[year] = {}
+            RATES[year].update(__parse_rates(data))
 
-    cache_file = CACHE_FILE.format(year=year)
-    with open(cache_file, encoding='iso8859-2') as f:
-        data = csv.reader(f, delimiter=';')
-        RATES[year] = __parse_rates(data)
-
-def __download_rates(year):
-    nbp_url = 'https://www.nbp.pl/kursy/Archiwum/archiwum_tab_a_{year}.csv'.format(year=year)
-    cache_file = CACHE_FILE.format(year=year)
+def __download_rates(year, rates_type):
+    nbp_url = 'https://www.nbp.pl/kursy/Archiwum/archiwum_tab_{type}_{year}.csv'.format(type=rates_type, year=year)
+    cache_file = CACHE_FILE.format(type=rates_type, year=year)
 
     if os.path.exists(cache_file):
         curtime = int(datetime.utcnow().strftime('%s'))
@@ -120,6 +122,8 @@ def __parse_rates(data):
         if date_match:
             for i, currency in enumerate(currencies, 1):
                 price = row[i].replace(',', '.')
+                if not price:
+                    continue
                 rates[currency][date] = float(price)
 
     return rates
