@@ -1,4 +1,6 @@
-# National Polish Bank (NBP) currency rates meet Python
+# National Bank of Poland (NBP) currency rates meet Python
+
+[![Build Status](https://travis-ci.org/ahes/nbp-rates.svg?branch=master)](https://travis-ci.org/ahes/nbp-rates)
 
 ## Usage
 
