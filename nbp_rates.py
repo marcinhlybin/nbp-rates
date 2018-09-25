@@ -4,10 +4,8 @@
 import os
 import re
 import csv
-import time
 import argparse
 import requests
-import itertools
 from datetime import datetime, timedelta
 
 CACHE_FILE = '/tmp/nbp_rates_{year}.csv'
@@ -58,7 +56,7 @@ def nbp_rates(currency, year):
     year     -- year string, e.g. 2018
     currency -- 3-letter currency symbol, e.g. EUR
 
-    Returns a list of tuples (date, price)
+    Returns a generator of tuples (date, price)
     """
 
     dt = datetime.strptime(str(year), '%Y')
@@ -117,8 +115,8 @@ def __parse_rates(data):
         date_match = re.match('^\d{8}$', date)
         if date_match:
             for i, currency in enumerate(currencies, 1):
-                price = float(row[i].replace(',', '.'))
-                rates[currency][date] = price
+                price = row[i].replace(',', '.')
+                rates[currency][date] = float(price)
 
     return rates
 
