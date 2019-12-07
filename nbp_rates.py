@@ -11,17 +11,18 @@ from datetime import datetime, timedelta
 CACHE_FILE = '/tmp/nbp_rates_{type}_{year}.csv'
 RATES = {}
 
+
 def nbp_rate_last(currency, dt=datetime.utcnow()):
     """Returns NBP currency rate for last workday
 
-    Arguments:
-    dt       -- date as datetime object
-    currency -- 3-letter currency symbol, e.g. EUR
+        Arguments:
+        dt       -- date as datetime object
+        currency -- 3-letter currency symbol, e.g. EUR
 
-    Returns a tuple (date, price)
+        Returns a tuple (date, price)
     """
 
-    for i in range(1,10):
+    for i in range(1, 10):
         lastday = dt - timedelta(days=i)
         year = int(lastday.strftime('%Y'))
         __init_rates(year)
@@ -85,8 +86,12 @@ def __init_rates(year):
                 RATES[year] = {}
             RATES[year].update(__parse_rates(data))
 
+
 def __download_rates(year, rates_type):
-    nbp_url = 'https://www.nbp.pl/kursy/Archiwum/archiwum_tab_{type}_{year}.csv'.format(type=rates_type, year=year)
+    nbp_url = 'https://www.nbp.pl/kursy/Archiwum/archiwum_tab_{type}_{year}.csv'.format(
+      type=rates_type,
+      year=year
+    )
     cache_file = CACHE_FILE.format(type=rates_type, year=year)
 
     if os.path.exists(cache_file):
@@ -130,9 +135,13 @@ def __parse_rates(data):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-y', '--year', metavar='YEAR', action='store', default=datetime.utcnow().strftime('%Y'))
+    parser.add_argument('-y', '--year', metavar='YEAR', action='store')
     parser.add_argument('currency', metavar='CURRENCY', type=str)
     args = parser.parse_args()
 
-    for date, price in nbp_rates(args.currency, args.year):
+    if not args.year:
+        date, price = nbp_rate_last(args.currency)
         print("{date}\t{price}".format(date=date, price=price))
+    else:
+        for date, price in nbp_rates(args.currency, args.year):
+            print("{date}\t{price}".format(date=date, price=price))
