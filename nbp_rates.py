@@ -8,6 +8,8 @@ import argparse
 import requests
 from datetime import datetime, timedelta
 
+__all__ = [ 'nbp_rate_last', 'nbp_rate', 'nbp_rates' ]
+
 CACHE_FILE = '/tmp/nbp_rates_{type}_{year}.csv'
 RATES = {}
 
@@ -82,7 +84,7 @@ def __init_rates(year):
         return
 
     for rates_type in ('a', 'b'):
-        __download_rates(year, rates_type)
+        download_rates(year, rates_type)
         cache_file = CACHE_FILE.format(type=rates_type, year=year)
         with open(cache_file, encoding='iso8859-2') as f:
             data = csv.reader(f, delimiter=';')
@@ -91,22 +93,28 @@ def __init_rates(year):
             RATES[year].update(__parse_rates(data))
 
 
-def __download_rates(year, rates_type):
-    nbp_url = 'https://www.nbp.pl/kursy/Archiwum/archiwum_tab_{type}_{year}.csv'.format(
+def download_rates(year, rates_type):
+    download_url = "https://www.nbp.pl/kursy/Archiwum/archiwum_tab_{type}_{year}.csv".format(
       type=rates_type,
       year=year
     )
     cache_file = CACHE_FILE.format(type=rates_type, year=year)
+    if not cache_file_is_fresh(cache_file):
+        refresh_cache_file(cache_file, download_url)
 
+def cache_file_is_fresh(cache_file):
     if os.path.exists(cache_file):
         curtime = int(datetime.utcnow().strftime('%s'))
         mtime = int(os.path.getmtime(cache_file))
         if curtime - mtime <= 3600:
-            return
+            return True
+    return False
 
-    r = requests.get(nbp_url)
+def refresh_cache_file(cache_file, download_url):
+    r = requests.get(download_url)
     with open(cache_file, 'wb') as f:
         f.write(r.content)
+
 
 def __parse_rates(data):
     rates = {}
