@@ -22,7 +22,9 @@ def nbp_rate_last(currency, dt=datetime.utcnow()):
         Returns a tuple (date, price)
     """
 
-    for i in range(1, 10):
+    currency = currency.upper()
+
+    for i in range(10):
         lastday = dt - timedelta(days=i)
         year = int(lastday.strftime('%Y'))
         __init_rates(year)
@@ -30,8 +32,8 @@ def nbp_rate_last(currency, dt=datetime.utcnow()):
             date = lastday.strftime('%Y%m%d')
             return date, RATES[year][currency][date]
         except KeyError:
-            continue
-
+            if i < 9: continue
+            raise
 
 def nbp_rate(currency, dt=datetime.utcnow()):
     """Returns NBP currency rate for date
@@ -43,6 +45,7 @@ def nbp_rate(currency, dt=datetime.utcnow()):
     Returns a tuple (date, price)
     """
 
+    currency = currency.upper()
     year = int(dt.strftime('%Y'))
     __init_rates(year)
 
@@ -63,6 +66,7 @@ def nbp_rates(currency, year):
     Returns a generator of tuples (date, price)
     """
 
+    currency = currency.upper()
     year = int(year)
     __init_rates(year)
     for date in sorted(RATES[year][currency]):
