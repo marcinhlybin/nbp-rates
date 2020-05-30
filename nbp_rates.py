@@ -20,7 +20,7 @@ def nbp_rate_last(symbol, dt=datetime.utcnow()):
 
         Arguments:
         dt       -- date as datetime object
-        symbol -- 3-letter currency symbol, e.g. EUR
+        symbol   -- 3-letter currency symbol, e.g. EUR
 
         Returns a tuple (date, price)
     """
@@ -45,7 +45,7 @@ def nbp_rate(symbol, dt=datetime.utcnow()):
 
     Arguments:
     dt       -- date as datetime object
-    symbol -- 3-letter currency symbol, e.g. EUR
+    symbol   -- 3-letter currency symbol, e.g. EUR
 
     Returns a tuple (date, price)
     """
@@ -67,7 +67,7 @@ def nbp_rates(symbol, year):
 
     Arguments:
     year     -- year string, e.g. 2018
-    symbol -- 3-letter currency symbol, e.g. EUR
+    symbol   -- 3-letter currency symbol, e.g. EUR
 
     Returns a generator of tuples (date, price)
     """
@@ -130,11 +130,13 @@ def read_year_from_data_file(year):
             get_year_from_data(year, data)
 
 
-def get_year_from_data(year, data):
-    if year not in DATA:
-        DATA[year] = {}
-    DATA[year].update(parse_rates_data(data))
-    
+def data_file_is_fresh(data_file):
+    if os.path.exists(data_file):
+        curtime = int(datetime.utcnow().strftime('%s'))
+        mtime = int(os.path.getmtime(data_file))
+        if curtime - mtime <= 3600:
+            return True
+
 
 def download_rates_data(year, rates_type):
     data_file = DATA_FILE.format(type=rates_type, year=year)
@@ -147,13 +149,11 @@ def download_rates_data(year, rates_type):
         f.write(r.content)
 
 
-def data_file_is_fresh(data_file):
-    if os.path.exists(data_file):
-        curtime = int(datetime.utcnow().strftime('%s'))
-        mtime = int(os.path.getmtime(data_file))
-        if curtime - mtime <= 3600:
-            return True
-
+def get_year_from_data(year, data):
+    if year not in DATA:
+        DATA[year] = {}
+    DATA[year].update(parse_rates_data(data))
+    
 
 def parse_rates_data(data):
     rates = {}
@@ -182,15 +182,6 @@ def parse_rates_data(data):
     return rates
 
 
-def is_date(string):
-    return re.match('^\d{8}$', string)
-
-
-def is_currency_row(row):
-    if len(row) > 0:
-        return row[0] == "data"
-
-
 def get_currencies(row):
     if not is_currency_row(row):
         raise ValueError("Currency row not found in data")
@@ -199,5 +190,18 @@ def get_currencies(row):
         currency_match = re.match('^(\d+)(\w+)$', col)
         if currency_match:
             yield Currency(name=currency_match[2], amount=currency_match[1])
+
+
+def is_currency_row(row):
+    if len(row) > 0:
+        return row[0] == "data"
+
+
+def is_date(string):
+    return re.match('^\d{8}$', string)
+
+
+
+
 
 
