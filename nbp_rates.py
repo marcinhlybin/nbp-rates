@@ -80,20 +80,6 @@ def nbp_rates(symbol, year):
         yield (date, price)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-y', '--year', metavar='YEAR', action='store')
-    parser.add_argument('symbol', metavar='CURRENCY SYMBOL', type=str)
-    args = parser.parse_args()
-
-    if not args.year:
-        date, price = nbp_rate_last(args.symbol)
-        print("{date}\t{price}".format(date=date, price=price))
-    else:
-        for date, price in nbp_rates(args.symbol, args.year):
-            print("{date}\t{price}".format(date=date, price=price))
-
-
 #
 # INTERNAL IMPLEMENTATION STARTS HERE
 #
@@ -199,6 +185,21 @@ def is_currency_row(row):
 
 def is_date(string):
     return re.match('^\d{8}$', string)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-y', '--year', metavar='YEAR', action='store')
+    parser.add_argument('symbol', metavar='CURRENCY', type=str)
+    args = parser.parse_args()
+
+    if not args.year:
+        date, price = nbp_rate_last(args.symbol)
+        print("{date}\t{price}".format(date=date, price=price))
+    else:
+        for date, price in nbp_rates(args.symbol, args.year):
+            print("{date}\t{price}".format(date=date, price=price))
+
 
 
 
