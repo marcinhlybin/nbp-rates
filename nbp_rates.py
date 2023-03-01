@@ -126,7 +126,7 @@ def data_file_is_fresh(data_file):
 
 def download_rates_data(year, rates_type):
     data_file = DATA_FILE.format(type=rates_type, year=year)
-    download_url = "https://www.nbp.pl/kursy/Archiwum/archiwum_tab_{type}_{year}.csv".format(
+    download_url = "https://static.nbp.pl/dane/kursy/Archiwum/archiwum_tab_{type}_{year}.csv".format(
       type=rates_type,
       year=year
     )
