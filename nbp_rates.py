@@ -107,10 +107,14 @@ def is_year_available(year):
 def read_year_from_data_file(year):
     for rates_type in ["a", "b"]:
         data_file = DATA_FILE.format(type=rates_type, year=year)
-        
+
         if not data_file_is_fresh(data_file):
-            download_rates_data(year, rates_type)
-        
+            if not download_rates_data(year, rates_type):
+                continue
+
+        if not os.path.exists(data_file):
+            continue
+
         with open(data_file, encoding='iso8859-2') as f:
             data = csv.reader(f, delimiter=';')
             get_year_from_data(year, data)
@@ -130,9 +134,15 @@ def download_rates_data(year, rates_type):
       type=rates_type,
       year=year
     )
-    r = requests.get(download_url)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+    r = requests.get(download_url, headers=headers)
+    if r.status_code != 200:
+        return False
     with open(data_file, 'wb') as f:
         f.write(r.content)
+    return True
 
 
 def get_year_from_data(year, data):
